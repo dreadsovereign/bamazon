@@ -1,6 +1,5 @@
 var inquirer = require("inquirer");
 var mysql = require("mysql");
-require("console.table");
 
 var connection = mysql.createConnection({
   host: "localhost",
@@ -15,18 +14,34 @@ function validateInput(value) {
   var sign = Math.sign(value);
 
   if (integer && (sign === 1)) {
+    
     return true;
+  
   } else {
+  
     return "Please enter a whole non-zero number.";
+  
   }
+
 }
 
 function promptCustomerPurchase () {
-  inquirer.prompt([{
-    type: "input",
-    name: "item_id",
-    message: "Please enter the item ID number of the of the product you would like to purchase"
-  }]).then(function(input) {
+  inquirer.prompt([
+    {
+      type: "input",
+      name: "item_id",
+      message: "Please enter the item ID number of the of the product you would like to purchase",
+      validate: validateInput,
+      filter: Number
+    },
+    {
+      type: "input",
+      name: "quantity",
+      message: "How many would you like?",
+      validate: validateInput,
+      filter: Number
+    }
+  ]).then(function(input) {
     var item = input.item_id;
     
     var quantity = input.quantity;
@@ -37,7 +52,7 @@ function promptCustomerPurchase () {
       
       if (err) throw err;
       
-      if (data.length === 0) {
+      if (item !== data.item_id) {
         
         console.log("Please enter a valid item ID number");
         showInventory();
@@ -69,7 +84,49 @@ function promptCustomerPurchase () {
           console.log("\n----------------------------------------------------------------------\n");
           showInventory();
         }
+      
       }
+    
     })
+  
   })
+
 }
+
+function showInventory () {
+  queryString = "SELECT * FROM products";
+
+  connection.query(queryString, function(err, data) {
+    if (err) throw err;
+    
+    console.log("Current Inventory:");
+    
+    console.log("------------------\n");
+
+    var stuff = " ";
+
+    for (var i = 0; i < data.length; i++) {
+      stuff = " ";
+      stuff += "Item ID: " + data[i].item_id + " || ";
+      stuff += "Product Name: " + data[i].product_name + " || ";
+      stuff += "Quantity: " + data[i].stock_quantity + " || ";
+      stuff += "Department: " + data[i].department_name + " || ";
+      stuff += "Price: $" + data[i].price + " \n ";
+
+      console.log(stuff);
+    }
+
+    console.log("\n----------------------------------------------------------------------\n");
+
+    promptCustomerPurchase();
+  })
+
+}
+
+function Bamazon() {
+
+  showInventory();
+
+}
+
+Bamazon();
