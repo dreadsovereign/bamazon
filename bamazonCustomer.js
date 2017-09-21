@@ -52,7 +52,7 @@ function promptCustomerPurchase () {
       
       if (err) throw err;
       
-      if (item !== data.item_id) {
+      if (data.length === 0) {
         
         console.log("Please enter a valid item ID number");
         showInventory();
